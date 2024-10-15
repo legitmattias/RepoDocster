@@ -1,5 +1,5 @@
-import React from 'react';
-import './App.css';
+import React from 'react'
+import './App.css'
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
         <p>&copy; 2024 RepoDocster</p>
       </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
