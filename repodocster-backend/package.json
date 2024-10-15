@@ -4,7 +4,8 @@
   "description": "Backend for RepoDocster. Fetches markdown files from GitHub and processes them using mddoc-toolkit.",
   "main": "src/app.ts",
   "scripts": {
-    "start": "ts-node src/app.ts"
+    "start": "ts-node src/app.ts",
+    "dev": "nodemon --exec ts-node src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.5",
+    "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }
