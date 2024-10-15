@@ -1,19 +1,20 @@
-import express from 'express';
-import cors from 'cors';
+import express from 'express'
+import cors from 'cors'
 
-const app = express();
-const PORT = process.env.PORT || 4000;
+const app = express()
+const PORT = process.env.PORT || 4000
 
-// Middlewares
-app.use(express.json());
-app.use(cors());
+app.use(cors())
 
-// Basic routes
-app.get('/', (req, res) => {
-  res.send('Backend is running');
-});
+// JSON parsing middleware
+app.use(express.json())
 
-// Listen on port
+// Simple GET endpoint
+app.get('/api/status', (req, res) => {
+  res.json({ message: 'RepoDocster backend is running!' })
+})
+
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+  console.log(`Server is running on http://localhost:${PORT}`)
+})
