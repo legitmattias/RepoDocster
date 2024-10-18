@@ -67,3 +67,7 @@ aux/
 
 # Manual test files
 manual-test.js
+
+# Run scripts with env variables
+start-dev.sh
+start.sh
