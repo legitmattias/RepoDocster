@@ -1,27 +1,22 @@
-import { Request, Response } from 'express'
-import axios from 'axios'
+import { Request, Response, NextFunction } from 'express'
+import { fetchGitHubDocument } from '../services/githubService'
 
-const GITHUB_API_URL = process.env.GITHUB_TOKEN
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
-// Controller to fetch a document.
-export const getGitHubDocument = async (req: Request, res: Response) => {
+/**
+ * Controller to fetch a document from a GitHub repository.
+ * 
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
+ */
+export const getGitHubDocument = async (req: Request, res: Response, next: NextFunction) => {
   const { owner, repo, filepath } = req.params
 
   try {
-    const response = await axios.get(
-      `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${filepath}`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3.raw',
-          Authorization: `Bearer ${GITHUB_TOKEN}`,
-        },
-      }
-    )
-
-    const content = response.data
+    // Fetch the document using the GitHub service.
+    const content = await fetchGitHubDocument(owner, repo, filepath)
     res.status(200).json({ content })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Failed to fetch document from GitHub' })
+    next(error)
   }
 }
