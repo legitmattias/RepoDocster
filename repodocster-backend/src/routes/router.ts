@@ -1,7 +1,7 @@
 import express from 'express'
 import { Request, Response, NextFunction } from 'express'
 import http from 'node:http'
-import { getGitHubDocument } from '../controllers/githubController'
+import { getGitHubDocument } from '../controllers/githubController.js'
 
 export const router = express.Router()
 
