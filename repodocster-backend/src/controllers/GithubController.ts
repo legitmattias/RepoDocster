@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import BackendConfig from '../config/BackendConfig'
-import { fetchGithubDocument } from '../services/githubService'
-import HttpError from '../utils/HttpError'
+import BackendConfig from '../config/BackendConfig.js'
+import { fetchGithubDocument } from '../services/githubService.js'
+import HttpError from '../utils/HttpError.js'
 
 class GithubController {
   private config: BackendConfig
