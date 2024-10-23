@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import BackendConfig from '../config/BackendConfig'
 import { fetchGithubDocument } from '../services/githubService'
-import { RepoReadmeProcessor, ChangelogProcessor } from '@kikinit/mddoc-toolkit'
+import { RepoReadmeProcessor, ChangelogProcessor }from '@kikinit/mddoc-toolkit'
 import HttpError from '../utils/HttpError'
 
 class GithubController {
@@ -11,6 +11,7 @@ class GithubController {
     this.config = config
   }
 
+  // Method to handle the GitHub document fetching.
   async getGithubDocument(
     req: Request,
     res: Response,
@@ -30,12 +31,10 @@ class GithubController {
 
       // Check if user wants to bypass the processor.
       if (bypassProcessor === 'true') {
-        // Return raw document.
         res.status(200).json({ content: document })
       }
 
-      // Ensure methods is an array if passed.
-      const selectedMethods = Array.isArray(methods) ? methods : []
+      const selectedMethods = Array.isArray(methods) ? methods : [methods]
 
       // Process README.md using RepoReadmeProcessor.
       if (filepath.toLowerCase() === 'readme.md') {
@@ -71,11 +70,10 @@ class GithubController {
         return
       }
 
-      // If file type is not recognized
-      throw new HttpError('Unsupported file type', 400)
+      // If no valid filepath, throw a 404 error.
+      throw new HttpError('File not found', 404)
     } catch (error) {
-      console.error(error)
-      next(new HttpError('Failed to fetch or process document', 500))
+      next(error)
     }
   }
 }
