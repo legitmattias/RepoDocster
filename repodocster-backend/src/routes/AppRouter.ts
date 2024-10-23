@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction, Router } from 'express'
 import GithubController from '../controllers/GithubController.js'
 import Config from '../config/BackendConfig.js'
+import HttpError from '../utils/HttpError.js'
 
 class AppRouter {
   private router: Router
@@ -12,22 +13,27 @@ class AppRouter {
     this.initializeRoutes()
   }
 
+  // Initialize all routes.
   private initializeRoutes(): void {
-    // GET route for retrieving GitHub documents.
-    this.router.get(
-      '/api/github-docs/:owner/:repo/:filepath',
-      (req: Request, res: Response, next: NextFunction) => {
-        this.githubController.getGithubDocument(req, res, next)
-      }
-    )
+    this.router.get('/api/github-docs/:owner/:repo/:filepath', this.getGithubDocumentHandler.bind(this))
 
     // Catch-all for undefined routes.
-    this.router.use('*', (req: Request, res: Response, next: NextFunction) => {
-      const error = new Error(`Not Found: ${req.originalUrl}`)
-      next(error)
-    })
+    this.router.use('*', this.handleUndefinedRoutes.bind(this))
   }
 
+  // Route handler for fetching GitHub documents.
+  private getGithubDocumentHandler(req: Request, res: Response, next: NextFunction): void {
+    this.githubController.getGithubDocument(req, res, next).catch(next)
+  }
+
+  // Handle undefined routes.
+  private handleUndefinedRoutes(req: Request, res: Response, next: NextFunction): void {
+    // Use HttpError for a 404 error.
+    const error = new HttpError(`Not Found: ${req.originalUrl}`, 404)
+    next(error)
+  }
+
+  // Get the initialized router.
   public getRouter(): Router {
     return this.router
   }
