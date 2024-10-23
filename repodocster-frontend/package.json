@@ -1,6 +1,6 @@
 {
   "name": "repodocster-frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Frontend for RepoDocster, a React-based app for fetching and processing markdown documentation from GitHub repositories.",
   "author": "Mattias Ubbesen <mu222cu@student.lnu.se>",
