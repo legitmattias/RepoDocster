@@ -1,14 +1,16 @@
-import express from 'express'
-import { Request, Response, NextFunction } from 'express'
-import { getGithubDocument } from '../controllers/githubController.js'
-import Config from '../config/BackendConfig.js'
+import express, { Request, Response, NextFunction } from 'express'
+import GithubController from '../controllers/githubController'
+import Config from '../config/BackendConfig'
 
 export const router = (config: Config) => {
   const router = express.Router()
 
+  const githubController = new GithubController(config)
+
+  // GET route for retrieving Github documents.
   router.get('/api/github-docs/:owner/:repo/:filepath', (req: Request, res: Response) => {
-    getGithubDocument(req, res, config)
-    })
+    githubController.getGithubDocument(req, res)
+  })
 
   // Catch-all for undefined routes.
   router.use('*', (req: Request, res: Response, next: NextFunction) => {
