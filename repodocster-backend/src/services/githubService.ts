@@ -1,5 +1,6 @@
 import axios from 'axios'
 import BackendConfig from '../config/BackendConfig'
+import HttpError from '../utils/HttpError'
 
 /**
  * Fetches a file from a GitHub repository using the GitHub API.
@@ -20,36 +21,20 @@ export const fetchGithubDocument = async (
     const url = config.getGithubRoute(owner, repo, filepath)
     console.log('Fetching from GitHub API:', url)
 
-    const response = await axios.get(
-      url,
-      {
-        headers: {
-          Accept: config.getGithubApiAcceptHeader(),
-          Authorization: `Bearer ${config.getGithubToken()}`,
-        },
-      }
-    )
+    const response = await axios.get(url, {
+      headers: {
+        Accept: config.getGithubApiAcceptHeader(),
+        Authorization: `Bearer ${config.getGithubToken()}`,
+      },
+    })
     return response.data
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const statusCode = error.response?.status || 500 // Default to 500 if no status
-
-      let errorMessage = 'Error fetching the document from GitHub'
-      if (statusCode === 401) {
-        errorMessage = 'Unauthorized: Please check your GitHub token.'
-      } else if (statusCode === 404) {
-        errorMessage = 'File not found: The specified document does not exist.'
-      }
-
-      // Throw an error with status code and message
-      const customError = new Error(errorMessage)
-      customError.status = statusCode
-      throw customError
-    } else {
-      console.error('Error during GitHub API request:', error)
-      const genericError = new Error('An unexpected error occurred')
-      genericError.status = 500
-      throw genericError
+    if (axios.isAxiosError(error) && error.response?.status) {
+      throw new HttpError(
+        `Failed to fetch document: ${error.response.data.message || 'Error'}`,
+        error.response.status
+      )
     }
+    throw new HttpError('An unexpected error occurred', 500)
   }
 }

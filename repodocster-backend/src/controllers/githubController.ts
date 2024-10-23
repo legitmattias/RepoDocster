@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import http from 'node:http'
 import BackendConfig from '../config/BackendConfig'
 import { fetchGithubDocument } from '../services/githubService'
+import HttpError from '../utils/HttpError'
 
 class GithubController {
   private config: BackendConfig
@@ -27,12 +27,11 @@ class GithubController {
       )
       res.status(200).json({ content: document })
     } catch (error) {
-      const statusCode = (error as any)?.response?.status || 500
-      const err = new Error(
-        http.STATUS_CODES[statusCode] || 'Failed to fetch document'
-      )
-      err.status = statusCode
-      next(err)
+      if (error instanceof HttpError) {
+        next(error)
+      } else {
+        next(new HttpError('Internal Server Error', 500))
+      }
     }
   }
 }
