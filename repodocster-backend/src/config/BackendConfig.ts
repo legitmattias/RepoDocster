@@ -1,12 +1,18 @@
-export default class Config {
+export default class BackendConfig {
+  private port: number
   private githubToken: string
   private githubApiUrl: string
   private githubAcceptHeader: string
 
-  constructor(githubToken: string, githubApiUrl: string) {
+  constructor(port: number, githubToken: string, githubApiUrl: string, githubAcceptHeader: string) {
+    this.port = port
     this.githubToken = githubToken
     this.githubApiUrl = githubApiUrl
-    this.githubAcceptHeader = 'application/vnd.github.v3.raw'
+    this.githubAcceptHeader = githubAcceptHeader
+  }
+
+  getPort(): number {
+    return this.port
   }
 
   // Returns the GitHub API base URL.
