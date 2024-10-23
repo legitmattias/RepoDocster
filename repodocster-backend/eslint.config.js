@@ -5,6 +5,7 @@ import globals from 'globals'
 export default [
   {
     files: ['**/*.ts'],
+    ignores: ['**/*.d.ts'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
