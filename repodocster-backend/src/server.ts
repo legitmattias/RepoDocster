@@ -5,9 +5,9 @@ import httpContext from 'express-http-context'
 import helmet from 'helmet'
 import { randomUUID } from 'node:crypto'
 import http from 'node:http'
-import { router } from './routes/router.js'
+import AppRouter from './routes/Router.js'
 import BackendConfig from './config/BackendConfig.js'
-import HttpError from './utils/HttpError'
+import HttpError from './utils/HttpError.js'
 
 try {
   // Convert process.env.PORT to a number or default to 4000 if not set.
@@ -53,8 +53,9 @@ try {
     next()
   })
 
-  // Register router.
-  app.use('/', router(config))
+  // Init and register router.
+  const appRouter = new AppRouter(config)
+  app.use('/', appRouter.getRouter())
 
   // Error handler middleware.
   app.use((err: HttpError, req: Request, res: Response) => {
