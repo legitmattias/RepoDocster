@@ -54,41 +54,24 @@ try {
     const statusCode = err.status || 500
 
     // Use HTTP status code description or fallback to a generic message.
-    let message =
+    const message =
       err.message ||
       http.STATUS_CODES[statusCode] ||
       'An unexpected condition was encountered.'
 
-    // Set message based on status code for common cases.
-    switch (statusCode) {
-      case 400:
-        message = 'Client Error: Validation or request issue.'
-        break
-      case 401:
-        message = 'Unauthorized: Invalid or missing credentials.'
-        break
-      case 404:
-        message = 'Not Found: The requested resource was not found.'
-        break
-      case 409:
-        message = 'Conflict: The resource is already registered.'
-        break
+    // Log the error for debugging.
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(
+        `Error: ${message}\nStatus: ${statusCode}\nStack: ${err.stack}`
+      )
     }
 
-    if (process.env.NODE_ENV === 'production') {
-      // Production: Only return status code and message.
-      res.status(statusCode).json({
-        status_code: statusCode,
-        message,
-      })
-    } else {
-      // Development: Return status code, message, and full error stack for debugging.
-      res.status(statusCode).json({
-        status_code: statusCode,
-        message,
-        stack: err.stack,
-      })
-    }
+    // Production: Only return status code and message, in development also return error stack.
+    res.status(statusCode).json({
+      status_code: statusCode,
+      message,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    })
   })
 
   // Start the server.
