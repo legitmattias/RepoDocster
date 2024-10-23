@@ -1,6 +1,6 @@
 import axios from 'axios'
-import BackendConfig from '../config/BackendConfig'
-import HttpError from '../utils/HttpError'
+import BackendConfig from '../config/BackendConfig.js'
+import HttpError from '../utils/HttpError.js'
 
 /**
  * Fetches a file from a GitHub repository using the GitHub API.
