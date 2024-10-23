@@ -5,7 +5,7 @@ import httpContext from 'express-http-context'
 import helmet from 'helmet'
 import { randomUUID } from 'node:crypto'
 import http from 'node:http'
-import AppRouter from './routes/Router.js'
+import AppRouter from './routes/AppRouter.js'
 import BackendConfig from './config/BackendConfig.js'
 import HttpError from './utils/HttpError.js'
 
