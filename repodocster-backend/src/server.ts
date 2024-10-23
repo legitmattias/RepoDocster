@@ -10,16 +10,8 @@ import BackendConfig from './config/BackendConfig.js'
 import HttpError from './utils/HttpError.js'
 
 try {
-  // Convert process.env.PORT to a number or default to 4000 if not set.
-  const port = Number(process.env.PORT) || 4000
-
   // Initialize Config.
-  const config = new BackendConfig(
-    port,
-    process.env.GITHUB_TOKEN || '',
-    process.env.GITHUB_API_URL || 'https://api.github.com',
-    process.env.GITHUB_ACCEPT_HEADER || 'application/vnd.github.v3.raw'
-  )
+  const config = new BackendConfig()
 
   const app = express()
 

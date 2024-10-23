@@ -4,11 +4,11 @@ export default class BackendConfig {
   private githubApiUrl: string
   private githubAcceptHeader: string
 
-  constructor(port: number, githubToken: string, githubApiUrl: string, githubAcceptHeader: string) {
-    this.port = port
-    this.githubToken = githubToken
-    this.githubApiUrl = githubApiUrl
-    this.githubAcceptHeader = githubAcceptHeader
+  constructor() {
+    this.port = Number(process.env.PORT) || 4000
+    this.githubToken = process.env.GITHUB_TOKEN || ''
+    this.githubApiUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
+    this.githubAcceptHeader = process.env.GITHUB_ACCEPT_HEADER || 'application/vnd.github.v3.raw'
   }
 
   getPort(): number {

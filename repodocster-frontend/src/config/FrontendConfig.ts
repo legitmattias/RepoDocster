@@ -1,8 +1,8 @@
 class FrontendConfig {
   private backendApiUrl: string
 
-  constructor(backendApiUrl: string) {
-    this.backendApiUrl = backendApiUrl
+  constructor() {
+    this.backendApiUrl = process.env.REACT_APP_BACKEND_API_URL || ''
   }
 
   // Return the backend API URL.
