@@ -24,7 +24,38 @@
 - **Version Comparison for Changelogs**: Compare different versions of changelogs to see the differences between two specified versions.
 - **Past Report History**: Store and manage previously generated reports locally or in the cloud, allowing users to revisit past markdown processing results.
 - **Collaborative Features**: Allow teams to share generated reports and collaborate on reviewing documentation.
+
+## Backend API
+
+The backend API provides endpoints for interacting with GitHub repositories and fetching markdown files.
+
+### Endpoints
+
+#### `GET /api/github-docs/:owner/:repo/:filepath`
+
+Fetches a specific markdown file from a GitHub repository.
+
+- **Parameters**:
+  - `owner` (string): GitHub owner (e.g., username or organization).
+  - `repo` (string): Repository name.
+  - `filepath` (string): The file path inside the repository (e.g., `README.md` or `CHANGELOG.md`).
   
+- **Response**: Returns the raw markdown content of the file.
+
+Example:
+
+```bash
+GET /api/github-docs/kikinit/RepoDocster/README.md
+```
+
+Response:
+
+```json
+{
+  "content": "# RepoDocster\n\nRepoDocster is a web-based app..."
+}
+```
+
 ## Installation
 
 To run the project locally, follow these steps:
@@ -50,7 +81,7 @@ To run the project locally, follow these steps:
    - In one terminal, start the backend:
      ```bash
      cd backend
-     npm start
+     ./start.sh
      ```
    - In another terminal, start the frontend:
      ```bash
