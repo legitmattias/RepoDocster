@@ -15,15 +15,23 @@ class AppRouter {
 
   // Initialize all routes.
   private initializeRoutes(): void {
-    this.router.get('/api/github-docs/:owner/:repo/:filepath', this.getGithubDocumentHandler.bind(this))
+    // Use async handler for retrieving GitHub documents.
+    this.router.get('/api/github-docs/:owner/:repo/:filepath', this.asyncHandler(this.getGithubDocumentHandler.bind(this)))
 
     // Catch-all for undefined routes.
     this.router.use('*', this.handleUndefinedRoutes.bind(this))
   }
 
+  // Async route handler wrapper to catch and pass errors to next().
+  private asyncHandler(handler: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      handler(req, res, next).catch(next)
+    }
+  }
+
   // Route handler for fetching GitHub documents.
-  private getGithubDocumentHandler(req: Request, res: Response, next: NextFunction): void {
-    this.githubController.getGithubDocument(req, res, next).catch(next)
+  private async getGithubDocumentHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+    await this.githubController.getGithubDocument(req, res, next)
   }
 
   // Handle undefined routes.
