@@ -1,33 +1,46 @@
 import React, { useState } from 'react'
-import './FormPage.css'
+
 import FrontendConfig from '../config/FrontendConfig'
 
 interface FormPageProps {
   config: FrontendConfig
 }
 
-const FormPage: React.FC<FormPageProps> = ({ config }) => {
+function FormPage({ config }: FormPageProps) {
   const [owner, setOwner] = useState('')
   const [repo, setRepo] = useState('')
   const [filepath, setFilepath] = useState('')
+  const [fullPath, setFullPath] = useState('')
   const [bypassProcessor, setBypassProcessor] = useState(false)
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [useFullPath, setUseFullPath] = useState(false)
 
-  // Available methods based on document type.
-  const methodOptions =
-    filepath.toLowerCase() === 'readme.md'
-      ? ['extractInstallation', 'extractUsage']
-      : ['extractUnreleased', 'extractAdded']
+  // Available methods based on document type
+  const methodOptions = filepath === 'README.md' 
+    ? ['extractInstallation', 'extractUsage'] 
+    : ['extractUnreleased', 'extractAdded']
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const apiUrl = config.getGithubRoute(owner, repo, filepath)
+    let apiUrl = ''
+    if (useFullPath) {
+      const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
+      if (!match) {
+        setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
+        setLoading(false)
+        return
+      }
+      const [ownerFromPath, repoFromPath, filepathFromPath] = match
+      apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
+    } else {
+      apiUrl = config.getGithubRoute(owner, repo, filepath)
+    }
 
     try {
       const query = new URLSearchParams({
@@ -51,54 +64,89 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
 
   const toggleMethod = (method: string) => {
     setSelectedMethods((prev) =>
-      prev.includes(method)
-        ? prev.filter((m) => m !== method)
-        : [...prev, method]
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
     )
   }
 
   return (
     <div className="form-page">
-      <h1>Fetch Markdown Document</h1>
+      <h1>Process GitHub Markdown Document</h1>
+
+      {/* Switch between using full path or owner + repo + filepath */}
+      <div>
+        <label>
+          <input
+            type="radio"
+            checked={!useFullPath}
+            onChange={() => setUseFullPath(false)}
+          />
+          Enter Owner, Repo, and Filepath
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={useFullPath}
+            onChange={() => setUseFullPath(true)}
+          />
+          Paste Full GitHub URL
+        </label>
+      </div>
 
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="owner">Owner:</label>
-          <input
-            id="owner"
-            type="text"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            placeholder="GitHub owner"
-            required
-          />
-        </div>
+        {/* Input based on the selected option */}
+        {useFullPath ? (
+          <div>
+            <label htmlFor="fullPath">GitHub URL:</label>
+            <input
+              id="fullPath"
+              type="text"
+              value={fullPath}
+              onChange={(e) => setFullPath(e.target.value)}
+              placeholder="Paste full GitHub file URL"
+              required
+            />
+          </div>
+        ) : (
+          <>
+            <div>
+              <label htmlFor="owner">Owner:</label>
+              <input
+                id="owner"
+                type="text"
+                value={owner}
+                onChange={(e) => setOwner(e.target.value)}
+                placeholder="GitHub owner"
+                required
+              />
+            </div>
 
-        <div>
-          <label htmlFor="repo">Repository:</label>
-          <input
-            id="repo"
-            type="text"
-            value={repo}
-            onChange={(e) => setRepo(e.target.value)}
-            placeholder="GitHub repository"
-            required
-          />
-        </div>
+            <div>
+              <label htmlFor="repo">Repository:</label>
+              <input
+                id="repo"
+                type="text"
+                value={repo}
+                onChange={(e) => setRepo(e.target.value)}
+                placeholder="GitHub repository"
+                required
+              />
+            </div>
 
-        <div>
-          <label htmlFor="filepath">
-            Filepath (README.md or CHANGELOG.md):
-          </label>
-          <input
-            id="filepath"
-            type="text"
-            value={filepath}
-            onChange={(e) => setFilepath(e.target.value)}
-            placeholder="Filepath"
-            required
-          />
-        </div>
+            <div>
+              <label htmlFor="filepath">Filepath (README.md or CHANGELOG.md):</label>
+              <select
+                id="filepath"
+                value={filepath}
+                onChange={(e) => setFilepath(e.target.value)}
+                required
+              >
+                <option value="">Select Filepath</option>
+                <option value="README.md">README.md</option>
+                <option value="CHANGELOG.md">CHANGELOG.md</option>
+              </select>
+            </div>
+          </>
+        )}
 
         {/* Checkbox to bypass the processor */}
         <div>
@@ -113,7 +161,7 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
         </div>
 
         {/* Checkboxes for processor methods */}
-        {!bypassProcessor && (
+        {!bypassProcessor && filepath && (
           <div>
             <h3>Select Processing Methods:</h3>
             {methodOptions.map((method) => (
