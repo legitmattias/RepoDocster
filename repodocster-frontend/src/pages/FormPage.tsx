@@ -67,7 +67,7 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
 
   return (
     <div className="form-page">
-      <h1>RepoDocster - Fetch GitHub Markdown</h1>
+      <h1>RepoDocster - Fetch and process GitHub Readmes and Changelogs</h1>
 
       <form onSubmit={handleSubmit}>
         <fieldset>
