@@ -1,5 +1,9 @@
 import React, { useState } from 'react'
 import './App.css'
+import FrontendConfig from './config/FrontendConfig'
+
+// Initialize FrontendConfig.
+const config = new FrontendConfig(process.env.REACT_APP_BACKEND_API_URL || '')
 
 function App() {
   const [owner, setOwner] = useState('')
@@ -15,7 +19,7 @@ function App() {
     setLoading(true)
     setError(null)
 
-    const apiUrl = `${process.env.REACT_APP_BACKEND_API_URL}/api/github-docs/${owner}/${repo}/${filepath}`
+    const apiUrl = config.getGithubRoute(owner, repo, filepath)
     console.log('Requesting URL:', apiUrl)
 
     try {
@@ -39,7 +43,7 @@ function App() {
 
         <form onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="owner">Owner:</label> {/* htmlFor */}
+            <label htmlFor="owner">Owner:</label>
             <input
               id="owner"
               type="text"
@@ -50,7 +54,7 @@ function App() {
             />
           </div>
           <div>
-            <label htmlFor="repo">Repository:</label> {/* htmlFor */}
+            <label htmlFor="repo">Repository:</label>
             <input
               id="repo" 
               type="text"
@@ -61,7 +65,7 @@ function App() {
             />
           </div>
           <div>
-            <label htmlFor="filepath">Filepath:</label> {/* htmlFor */}
+            <label htmlFor="filepath">Filepath:</label>
             <input
               id="filepath"
               type="text"

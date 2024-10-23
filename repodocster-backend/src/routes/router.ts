@@ -1,15 +1,20 @@
 import express from 'express'
 import { Request, Response, NextFunction } from 'express'
-import http from 'node:http'
-import { getGitHubDocument } from '../controllers/githubController.js'
+import { getGithubDocument } from '../controllers/githubController.js'
+import Config from '../config/BackendConfig.js'
 
-export const router = express.Router()
+export const router = (config: Config) => {
+  const router = express.Router()
 
-router.get('/api/github-docs/:owner/:repo/:filepath', getGitHubDocument)
+  router.get('/api/github-docs/:owner/:repo/:filepath', (req: Request, res: Response) => {
+    getGithubDocument(req, res, config)
+    })
 
-// Catch-all for undefined routes.
-router.use('*', (req: Request, res: Response, next: NextFunction) => {
-  const statusCode = 404
-  const error = new Error(http.STATUS_CODES[statusCode])
-  next(error)
-})
+  // Catch-all for undefined routes.
+  router.use('*', (req: Request, res: Response, next: NextFunction) => {
+    const error = new Error(`Not Found: ${req.originalUrl}`)
+    next(error)
+  })
+
+  return router
+}

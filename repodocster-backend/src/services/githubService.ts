@@ -1,7 +1,5 @@
 import axios from 'axios'
-
-const GITHUB_API_URL = process.env.GITHUB_API_URL || 'https://api.github.com'
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+import Config from '../config/BackendConfig'
 
 /**
  * Fetches a file from a GitHub repository using the GitHub API.
@@ -9,22 +7,25 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN
  * @param {string} owner - The owner of the repository.
  * @param {string} repo - The repository name.
  * @param {string} filepath - The path to the file in the repository (e.g., README.md).
+ * @param {Config} config - The config Object.
  * @returns {Promise<string>} - The raw content of the file.
  */
-export const fetchGitHubDocument = async (
+export const fetchGithubDocument = async (
+  config: Config,
   owner: string,
   repo: string,
   filepath: string
 ): Promise<string> => {
   try {
-    const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${filepath}`
+    const url = `${config.getGithubRoute(owner, repo, filepath)}`
     console.log('Fetching from GitHub API:', url)
-    console.log('GitHub API Token:', GITHUB_TOKEN)
 
-    const response = await axios.get(url, {
+    const response = await axios.get(
+      url,
+      {
       headers: {
-        Accept: 'application/vnd.github.v3.raw',
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: config.getGithubApiAcceptHeader(),
+        Authorization: `Bearer ${config.getGithubToken()}`,
       },
     })
     return response.data

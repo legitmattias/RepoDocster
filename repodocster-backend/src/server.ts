@@ -6,6 +6,10 @@ import helmet from 'helmet'
 import { randomUUID } from 'node:crypto'
 import http from 'node:http'
 import { router } from './routes/router.js'
+import Config from './config/BackendConfig.js'
+
+// Initialize Config
+const config = new Config(process.env.GITHUB_TOKEN || '', process.env.GITHUB_API_URL || 'https://api.github.com')
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -38,7 +42,7 @@ app.use((req, res, next) => {
 })
 
 // Register router.
-app.use('/', router)
+app.use('/', router(config))
 
 // Error handler middleware.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
