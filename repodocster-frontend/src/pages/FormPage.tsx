@@ -11,102 +11,101 @@ function FormPage({ config }: FormPageProps) {
   const [repo, setRepo] = useState('')
   const [filepath, setFilepath] = useState('')
   const [fullPath, setFullPath] = useState('')
+  const [useFullPath, setUseFullPath] = useState(false)
   const [bypassProcessor, setBypassProcessor] = useState(false)
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [useFullPath, setUseFullPath] = useState(false)
 
-  // Available methods based on document type
-  const methodOptions = filepath === 'README.md' 
-    ? ['extractInstallation', 'extractUsage'] 
-    : ['extractUnreleased', 'extractAdded']
+  // Determine method options based on filepath
+  const determineMethodOptions = (path: string) => {
+    return path.toLowerCase() === 'readme.md'
+      ? ['extractInstallation', 'extractUsage']
+      : ['extractUnreleased', 'extractAdded']
+  }
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      setLoading(true)
-      setError(null)
-    
-      let apiUrl = ''
-    
-      if (useFullPath) {
-        // Extract owner, repo, and filepath from the full URL
-        const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
-        if (!match || match.length !== 4) {
-          setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
-          setLoading(false)
-          return
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_, ownerFromPath, repoFromPath, filepathFromPath] = match
-        apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
-      } else {
-        apiUrl = config.getGithubRoute(owner, repo, filepath)
-      }
-    
-      try {
-        const query = new URLSearchParams({
-          bypassProcessor: bypassProcessor.toString(),
-          methods: selectedMethods.join(','),
-        })
-    
-        const response = await fetch(`${apiUrl}?${query}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch document')
-        }
-    
-        const data = await response.json()
-        setContent(data.content)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
+  // Toggle selection of methods.
   const toggleMethod = (method: string) => {
     setSelectedMethods((prev) =>
-      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
+      prev.includes(method)
+        ? prev.filter((m) => m !== method)
+        : [...prev, method]
     )
+  }
+
+  // Handle form submission to fetch document.
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    let apiUrl = ''
+
+    if (useFullPath) {
+      // Extract owner, repo, and filepath from the full URL.
+      const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
+      if (!match || match.length !== 4) {
+        setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
+        setLoading(false)
+        return
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, ownerFromPath, repoFromPath, filepathFromPath] = match
+
+      apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
+      setFilepath(filepathFromPath)
+    } else {
+      apiUrl = config.getGithubRoute(owner, repo, filepath)
+    }
+
+    try {
+      const query = new URLSearchParams({
+        bypassProcessor: bypassProcessor.toString(),
+        methods: selectedMethods.join(',')
+      })
+
+      const response = await fetch(`${apiUrl}?${query}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch document')
+      }
+
+      const data = await response.json()
+      setContent(data.content)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="form-page">
       <h1>Fetch Markdown Document</h1>
 
-      {/* Switch between using full path or owner + repo + filepath */}
-      <div>
-        <label>
-          <input
-            type="radio"
-            checked={!useFullPath}
-            onChange={() => setUseFullPath(false)}
-          />
-          Enter Owner, Repo, and Filepath
-        </label>
-        <label>
-          <input
-            type="radio"
-            checked={useFullPath}
-            onChange={() => setUseFullPath(true)}
-          />
-          Paste Full GitHub URL
-        </label>
-      </div>
-
       <form onSubmit={handleSubmit}>
-        {/* Input based on the selected option */}
+        {/* Toggle between full path or owner/repo */}
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={useFullPath}
+              onChange={() => setUseFullPath(!useFullPath)}
+            />
+            Use Full Path
+          </label>
+        </div>
+
         {useFullPath ? (
           <div>
-            <label htmlFor="fullPath">GitHub URL:</label>
+            <label htmlFor="fullPath">GitHub Full Path:</label>
             <input
               id="fullPath"
               type="text"
               value={fullPath}
               onChange={(e) => setFullPath(e.target.value)}
-              placeholder="Paste full GitHub file URL"
+              placeholder="Full GitHub URL"
               required
             />
           </div>
@@ -138,16 +137,14 @@ function FormPage({ config }: FormPageProps) {
 
             <div>
               <label htmlFor="filepath">Filepath (README.md or CHANGELOG.md):</label>
-              <select
+              <input
                 id="filepath"
+                type="text"
                 value={filepath}
                 onChange={(e) => setFilepath(e.target.value)}
+                placeholder="Filepath"
                 required
-              >
-                <option value="">Select Filepath</option>
-                <option value="README.md">README.md</option>
-                <option value="CHANGELOG.md">CHANGELOG.md</option>
-              </select>
+              />
             </div>
           </>
         )}
@@ -165,10 +162,10 @@ function FormPage({ config }: FormPageProps) {
         </div>
 
         {/* Checkboxes for processor methods */}
-        {!bypassProcessor && filepath && (
+        {!bypassProcessor && (
           <div>
             <h3>Select Processing Methods:</h3>
-            {methodOptions.map((method) => (
+            {determineMethodOptions(filepath).map((method) => (
               <label key={method}>
                 <input
                   type="checkbox"
