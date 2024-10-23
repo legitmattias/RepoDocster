@@ -23,44 +23,48 @@ function FormPage({ config }: FormPageProps) {
     ? ['extractInstallation', 'extractUsage'] 
     : ['extractUnreleased', 'extractAdded']
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      setLoading(true)
+      setError(null)
+    
+      let apiUrl = ''
+    
+      if (useFullPath) {
+        // Extract owner, repo, and filepath from the full URL
+        const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
+        if (!match || match.length !== 4) {
+          setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
+          setLoading(false)
+          return
+        }
 
-    let apiUrl = ''
-    if (useFullPath) {
-      const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
-      if (!match) {
-        setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [_, ownerFromPath, repoFromPath, filepathFromPath] = match
+        apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
+      } else {
+        apiUrl = config.getGithubRoute(owner, repo, filepath)
+      }
+    
+      try {
+        const query = new URLSearchParams({
+          bypassProcessor: bypassProcessor.toString(),
+          methods: selectedMethods.join(','),
+        })
+    
+        const response = await fetch(`${apiUrl}?${query}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch document')
+        }
+    
+        const data = await response.json()
+        setContent(data.content)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
         setLoading(false)
-        return
       }
-      const [ownerFromPath, repoFromPath, filepathFromPath] = match
-      apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
-    } else {
-      apiUrl = config.getGithubRoute(owner, repo, filepath)
     }
-
-    try {
-      const query = new URLSearchParams({
-        bypassProcessor: bypassProcessor.toString(),
-        methods: selectedMethods.join(','),
-      })
-
-      const response = await fetch(`${apiUrl}?${query}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch document')
-      }
-
-      const data = await response.json()
-      setContent(data.content)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const toggleMethod = (method: string) => {
     setSelectedMethods((prev) =>
@@ -70,7 +74,7 @@ function FormPage({ config }: FormPageProps) {
 
   return (
     <div className="form-page">
-      <h1>Process GitHub Markdown Document</h1>
+      <h1>Fetch Markdown Document</h1>
 
       {/* Switch between using full path or owner + repo + filepath */}
       <div>
