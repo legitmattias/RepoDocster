@@ -8,8 +8,8 @@ export const router = (config: Config) => {
   const githubController = new GithubController(config)
 
   // GET route for retrieving Github documents.
-  router.get('/api/github-docs/:owner/:repo/:filepath', (req: Request, res: Response) => {
-    githubController.getGithubDocument(req, res)
+  router.get('/api/github-docs/:owner/:repo/:filepath', (req: Request, res: Response, next: NextFunction) => {
+    githubController.getGithubDocument(req, res, next)
   })
 
   // Catch-all for undefined routes.

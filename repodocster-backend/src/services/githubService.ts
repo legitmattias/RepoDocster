@@ -1,45 +1,55 @@
 import axios from 'axios'
-import Config from '../config/BackendConfig'
+import BackendConfig from '../config/BackendConfig'
 
 /**
  * Fetches a file from a GitHub repository using the GitHub API.
  *
+ * @param {BackendConfig} config - The configuration object with GitHub details.
  * @param {string} owner - The owner of the repository.
  * @param {string} repo - The repository name.
  * @param {string} filepath - The path to the file in the repository (e.g., README.md).
- * @param {Config} config - The config Object.
  * @returns {Promise<string>} - The raw content of the file.
  */
 export const fetchGithubDocument = async (
-  config: Config,
+  config: BackendConfig,
   owner: string,
   repo: string,
   filepath: string
 ): Promise<string> => {
   try {
-    const url = `${config.getGithubRoute(owner, repo, filepath)}`
+    const url = config.getGithubRoute(owner, repo, filepath)
     console.log('Fetching from GitHub API:', url)
 
     const response = await axios.get(
       url,
       {
-      headers: {
-        Accept: config.getGithubApiAcceptHeader(),
-        Authorization: `Bearer ${config.getGithubToken()}`,
-      },
-    })
+        headers: {
+          Accept: config.getGithubApiAcceptHeader(),
+          Authorization: `Bearer ${config.getGithubToken()}`,
+        },
+      }
+    )
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      // Handle axios-specific error.
-      throw new Error(
-        error.response?.data?.message ||
-          'Error fetching the document from GitHub'
-      )
+      const statusCode = error.response?.status || 500 // Default to 500 if no status
+
+      let errorMessage = 'Error fetching the document from GitHub'
+      if (statusCode === 401) {
+        errorMessage = 'Unauthorized: Please check your GitHub token.'
+      } else if (statusCode === 404) {
+        errorMessage = 'File not found: The specified document does not exist.'
+      }
+
+      // Throw an error with status code and message
+      const customError = new Error(errorMessage)
+      customError.status = statusCode
+      throw customError
     } else {
-      // Handle non-axios errors.
       console.error('Error during GitHub API request:', error)
-      throw new Error('An unexpected error occurred')
+      const genericError = new Error('An unexpected error occurred')
+      genericError.status = 500
+      throw genericError
     }
   }
 }
