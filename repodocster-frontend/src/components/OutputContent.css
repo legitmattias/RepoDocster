@@ -1,0 +1,17 @@
+.output-content {
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+pre {
+  background-color: #f4f4f4;
+  padding: 15px;
+  font-size: 1rem;
+  color: #333;
+  border-radius: 5px;
+  overflow-x: auto;
+}

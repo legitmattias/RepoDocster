@@ -1,0 +1,15 @@
+.processor-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+label {
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}

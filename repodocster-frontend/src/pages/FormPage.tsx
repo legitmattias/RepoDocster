@@ -1,12 +1,19 @@
 import React, { useState } from 'react'
-
+import './FormPage.css'
 import FrontendConfig from '../config/FrontendConfig'
+import PathToggle from '../components/PathToggle'
+import FullPathInput from '../components/FullPathInput'
+import OwnerRepoInput from '../components/OwnerRepoInput'
+import FileSelect from '../components/FileSelect'
+import ProcessorOptions from '../components/ProcessorOptions'
+import OutputContent from '../components/OutputContent'
+import LoadingErrorDisplay from '../components/LoadingErrorDisplay'
 
 interface FormPageProps {
   config: FrontendConfig
 }
 
-function FormPage({ config }: FormPageProps) {
+const FormPage: React.FC<FormPageProps> = ({ config }) => {
   const [owner, setOwner] = useState('')
   const [repo, setRepo] = useState('')
   const [filepath, setFilepath] = useState('')
@@ -53,7 +60,6 @@ function FormPage({ config }: FormPageProps) {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, ownerFromPath, repoFromPath, filepathFromPath] = match
-
       apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
       setFilepath(filepathFromPath)
     } else {
@@ -86,110 +92,41 @@ function FormPage({ config }: FormPageProps) {
 
       <form onSubmit={handleSubmit}>
         {/* Toggle between full path or owner/repo */}
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={useFullPath}
-              onChange={() => setUseFullPath(!useFullPath)}
-            />
-            Use Full Path
-          </label>
-        </div>
+        <PathToggle
+          useFullPath={useFullPath}
+          onToggle={() => setUseFullPath(!useFullPath)}
+        />
 
         {useFullPath ? (
-          <div>
-            <label htmlFor="fullPath">GitHub Full Path:</label>
-            <input
-              id="fullPath"
-              type="text"
-              value={fullPath}
-              onChange={(e) => setFullPath(e.target.value)}
-              placeholder="Full GitHub URL"
-              required
-            />
-          </div>
+          <FullPathInput fullPath={fullPath} onFullPathChange={setFullPath} />
         ) : (
-          <>
-            <div>
-              <label htmlFor="owner">Owner:</label>
-              <input
-                id="owner"
-                type="text"
-                value={owner}
-                onChange={(e) => setOwner(e.target.value)}
-                placeholder="GitHub owner"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="repo">Repository:</label>
-              <input
-                id="repo"
-                type="text"
-                value={repo}
-                onChange={(e) => setRepo(e.target.value)}
-                placeholder="GitHub repository"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="filepath">Filepath (README.md or CHANGELOG.md):</label>
-              <input
-                id="filepath"
-                type="text"
-                value={filepath}
-                onChange={(e) => setFilepath(e.target.value)}
-                placeholder="Filepath"
-                required
-              />
-            </div>
-          </>
+          <OwnerRepoInput
+            owner={owner}
+            repo={repo}
+            onOwnerChange={setOwner}
+            onRepoChange={setRepo}
+          />
         )}
 
-        {/* Checkbox to bypass the processor */}
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={bypassProcessor}
-              onChange={() => setBypassProcessor(!bypassProcessor)}
-            />
-            Bypass Processor
-          </label>
-        </div>
+        {/* File selection */}
+        <FileSelect filepath={filepath} onFilepathChange={setFilepath} />
 
-        {/* Checkboxes for processor methods */}
-        {!bypassProcessor && (
-          <div>
-            <h3>Select Processing Methods:</h3>
-            {determineMethodOptions(filepath).map((method) => (
-              <label key={method}>
-                <input
-                  type="checkbox"
-                  value={method}
-                  checked={selectedMethods.includes(method)}
-                  onChange={() => toggleMethod(method)}
-                />
-                {method}
-              </label>
-            ))}
-          </div>
-        )}
+        {/* Processor options */}
+        <ProcessorOptions
+          bypassProcessor={bypassProcessor}
+          selectedMethods={selectedMethods}
+          onToggleBypass={() => setBypassProcessor(!bypassProcessor)}
+          onMethodChange={toggleMethod}
+          methods={determineMethodOptions(filepath)}
+        />
 
+        {/* Submit button */}
         <button type="submit">Fetch Document</button>
       </form>
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {content && (
-        <div>
-          <h2>Document Content</h2>
-          <pre>{content}</pre>
-        </div>
-      )}
+      {/* Display loading, error, and content */}
+      <LoadingErrorDisplay loading={loading} error={error} />
+      <OutputContent content={content} />
     </div>
   )
 }

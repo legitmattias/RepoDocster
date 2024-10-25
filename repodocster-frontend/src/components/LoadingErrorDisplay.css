@@ -1,0 +1,12 @@
+.loading-error-display {
+  text-align: center;
+}
+
+p {
+  font-size: 1rem;
+  color: #d9534f;
+}
+
+p.loading {
+  color: #5bc0de;
+}
