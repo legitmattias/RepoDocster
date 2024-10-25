@@ -20,7 +20,7 @@ const OwnerRepoInput: React.FC<OwnerRepoInputProps> = ({ owner, repo, onOwnerCha
         placeholder="GitHub username or organization"
         required
       />
-      <small className="helper-text">Example: `kikinit` for GitHub’s repository owner.</small>
+      <small className="helper-text">Example: `kikinit`</small>
     </div>
     <div>
       <label htmlFor="repo">Repository:</label>
@@ -32,7 +32,7 @@ const OwnerRepoInput: React.FC<OwnerRepoInputProps> = ({ owner, repo, onOwnerCha
         placeholder="GitHub repository name"
         required
       />
-      <small className="helper-text">Example: `RepoDocster` for a GitHub repository name.</small>
+      <small className="helper-text">Example: `RepoDocster`.</small>
     </div>
   </div>
 )
