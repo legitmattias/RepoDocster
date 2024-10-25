@@ -27,17 +27,28 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
 
   // Determine method options based on filepath
   const determineMethodOptions = (path: string) => {
-    return path.toLowerCase() === 'readme.md'
-      ? ['extractInstallation', 'extractUsage']
-      : ['extractUnreleased', 'extractAdded']
+    if (path.toLowerCase() === 'readme.md') {
+      return [
+        'extractInstallation',
+        'extractUsage',
+        'extractApi',
+        'extractDependencies',
+        'extractLicenseInfo',
+      ]
+    } else if (path.toLowerCase() === 'changelog.md') {
+      return [
+        'extractUnreleased',
+        'extractAdded',
+        'extractChangedFeatures',
+      ]
+    }
+    return []
   }
 
   // Toggle selection of methods.
   const toggleMethod = (method: string) => {
     setSelectedMethods((prev) =>
-      prev.includes(method)
-        ? prev.filter((m) => m !== method)
-        : [...prev, method]
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
     )
   }
 
@@ -50,14 +61,12 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
     let apiUrl = ''
 
     if (useFullPath) {
-      // Extract owner, repo, and filepath from the full URL.
       const match = fullPath.match(/github\.com\/([^/]+)\/([^/]+)\/blob\/[^/]+\/(.+)/)
       if (!match || match.length !== 4) {
         setError('Invalid GitHub URL format. Please ensure it follows the correct structure.')
         setLoading(false)
         return
       }
-
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, ownerFromPath, repoFromPath, filepathFromPath] = match
       apiUrl = config.getGithubRoute(ownerFromPath, repoFromPath, filepathFromPath)
@@ -69,7 +78,7 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
     try {
       const query = new URLSearchParams({
         bypassProcessor: bypassProcessor.toString(),
-        methods: selectedMethods.join(',')
+        methods: selectedMethods.join(','),
       })
 
       const response = await fetch(`${apiUrl}?${query}`)
@@ -112,13 +121,15 @@ const FormPage: React.FC<FormPageProps> = ({ config }) => {
         <FileSelect filepath={filepath} onFilepathChange={setFilepath} />
 
         {/* Processor options */}
-        <ProcessorOptions
-          bypassProcessor={bypassProcessor}
-          selectedMethods={selectedMethods}
-          onToggleBypass={() => setBypassProcessor(!bypassProcessor)}
-          onMethodChange={toggleMethod}
-          methods={determineMethodOptions(filepath)}
-        />
+        {filepath && (filepath.toLowerCase() === 'readme.md' || filepath.toLowerCase() === 'changelog.md') && (
+          <ProcessorOptions
+            bypassProcessor={bypassProcessor}
+            selectedMethods={selectedMethods}
+            onToggleBypass={() => setBypassProcessor(!bypassProcessor)}
+            onMethodChange={toggleMethod}
+            methods={determineMethodOptions(filepath)}
+          />
+        )}
 
         {/* Submit button */}
         <button type="submit">Fetch Document</button>
