@@ -8,7 +8,8 @@
     "skipLibCheck": true,           // Skips checking of declaration files (.d.ts)
     "forceConsistentCasingInFileNames": true, // Ensures consistent casing in filenames
     "outDir": "./dist",             // Output directory for compiled files
-    "declaration": true             // Generate declaration files for TypeScript
+    "declaration": true,             // Generate declaration files for TypeScript
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": [
     "src/**/*.ts",                  // Include all TypeScript files in the src folder
