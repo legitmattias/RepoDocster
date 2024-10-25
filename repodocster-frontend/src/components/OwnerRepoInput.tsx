@@ -32,7 +32,7 @@ const OwnerRepoInput: React.FC<OwnerRepoInputProps> = ({ owner, repo, onOwnerCha
         placeholder="GitHub repository name"
         required
       />
-      <small className="helper-text">Example: `RepoDocster`.</small>
+      <small className="helper-text">Example: `RepoDocster`</small>
     </div>
   </div>
 )
