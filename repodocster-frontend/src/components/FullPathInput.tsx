@@ -14,9 +14,12 @@ const FullPathInput: React.FC<FullPathInputProps> = ({ fullPath, onFullPathChang
       type="text"
       value={fullPath}
       onChange={(e) => onFullPathChange(e.target.value)}
-      placeholder="Full GitHub URL"
+      placeholder="https://github.com/username/repo/blob/branch/filename.md"
       required
     />
+    <small className="helper-text">
+      Enter the full URL to the file in your GitHub repository, including `blob` and branch name.
+    </small>
   </div>
 )
 

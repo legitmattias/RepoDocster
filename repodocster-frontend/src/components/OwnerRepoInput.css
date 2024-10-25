@@ -10,3 +10,11 @@ input {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+.helper-text {
+  font-size: 0.875em;
+  color: #6c757d;
+  margin-top: 0.25em;
+  margin-left: 0.25em;
+}
+
