@@ -20,7 +20,8 @@ class GithubController {
     console.log('getGithubDocument invoked!')
 
     const { owner, repo, filepath } = req.params
-    const { bypassProcessor, methods } = req.query
+    const bypassProcessor = req.query.bypassProcessor as string | undefined
+    const methods = req.query.methods as string | string[] | undefined
     console.log('Received params:', owner, repo, filepath)
 
     try {
@@ -39,12 +40,18 @@ class GithubController {
         return
       }
 
-      const selectedMethods = Array.isArray(methods) ? methods : [methods]
+      // Ensure `methods` is treated as an array of strings.
+      const selectedMethods = typeof methods === 'string'
+        ? methods.split(',')
+        : Array.isArray(methods)
+        ? methods
+        : []
+
       console.log('Selected methods:', selectedMethods)
 
       let processedContent = ''
 
-      // Handle README.md processing.
+      // Processor and method logic for README.md files.
       if (filepath.toLowerCase() === 'readme.md') {
         console.log('Processing README.md...')
         const processor = new RepoReadmeProcessor(document, false)
@@ -54,7 +61,6 @@ class GithubController {
           if (installationSections.length > 0) {
             console.log('Extracting installation instructions...')
             installationSections.forEach((section) => {
-              // Combine title and body for proper markdown structure.
               processedContent += `## ${section.title}\n\n${section.body}\n\n`
             })
           }
@@ -65,7 +71,6 @@ class GithubController {
           if (usageSections.length > 0) {
             console.log('Extracting usage examples...')
             usageSections.forEach((section) => {
-              // Combine title and body for proper markdown structure.
               processedContent += `## ${section.title}\n\n${section.body}\n\n`
             })
           }
@@ -76,7 +81,7 @@ class GithubController {
         return
       }
 
-      // Handle CHANGELOG.md processing.
+      // Processor and method logic for CHANGELOG.md files.
       if (filepath.toLowerCase() === 'changelog.md') {
         console.log('Processing CHANGELOG.md...')
         const processor = new ChangelogProcessor(document, false)
@@ -106,7 +111,7 @@ class GithubController {
         return
       }
 
-      // If no valid filepath match, throw 404.
+      // Handle unsupported file path with a 404 error.
       console.log('File not found, throwing 404 error...')
       next(new HttpError('File not found', 404))
     } catch (error) {
