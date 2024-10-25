@@ -39,9 +39,8 @@ Thumbs.db
 .cache
 npm-debug.log*
 
-# TypeScript
+# TypeScript build info files (keep custom .d.ts files)
 *.tsbuildinfo
-*.d.ts
 
 # Miscellaneous
 *.swp
