@@ -25,15 +25,8 @@ class GithubController {
     console.log('Received params:', owner, repo, filepath)
 
     try {
-      // Fetch the document from GitHub.
-      const document = await fetchGithubDocument(
-        this.config,
-        owner,
-        repo,
-        filepath
-      )
+      const document = await fetchGithubDocument(this.config, owner, repo, filepath)
 
-      // Return raw document if bypassProcessor is true.
       if (bypassProcessor === 'true') {
         console.log('Bypassing processor, returning raw document')
         res.status(200).json({ content: document })
@@ -41,83 +34,89 @@ class GithubController {
       }
 
       // Ensure `methods` is treated as an array of strings.
-      const selectedMethods = typeof methods === 'string'
-        ? methods.split(',')
-        : Array.isArray(methods)
-        ? methods
-        : []
+      const selectedMethods = this.parseMethods(methods)
+      console.log('Parsed methods:', selectedMethods)
 
-      console.log('Selected methods:', selectedMethods)
-
-      let processedContent = ''
-
-      // Processor and method logic for README.md files.
-      if (filepath.toLowerCase() === 'readme.md') {
-        console.log('Processing README.md...')
-        const processor = new RepoReadmeProcessor(document, false)
-
-        if (selectedMethods.includes('extractInstallation')) {
-          const installationSections = processor.installationInstructions
-          if (installationSections.length > 0) {
-            console.log('Extracting installation instructions...')
-            installationSections.forEach((section) => {
-              processedContent += `## ${section.title}\n\n${section.body}\n\n`
-            })
-          }
-        }
-
-        if (selectedMethods.includes('extractUsage')) {
-          const usageSections = processor.usageExamples
-          if (usageSections.length > 0) {
-            console.log('Extracting usage examples...')
-            usageSections.forEach((section) => {
-              processedContent += `## ${section.title}\n\n${section.body}\n\n`
-            })
-          }
-        }
-
-        console.log('Processed content:', processedContent)
-        res.status(200).json({ content: processedContent })
+      const processorInstance = this.getProcessorInstance(filepath, document)
+      if (!processorInstance) {
+        next(new HttpError('File not found', 404))
         return
       }
 
-      // Processor and method logic for CHANGELOG.md files.
-      if (filepath.toLowerCase() === 'changelog.md') {
-        console.log('Processing CHANGELOG.md...')
-        const processor = new ChangelogProcessor(document, false)
-
-        if (selectedMethods.includes('extractUnreleased')) {
-          const unreleasedSections = processor.unreleasedChanges
-          if (unreleasedSections.length > 0) {
-            console.log('Extracting unreleased changes...')
-            unreleasedSections.forEach((section) => {
-              processedContent += `## ${section.title}\n\n${section.body}\n\n`
-            })
-          }
-        }
-
-        if (selectedMethods.includes('extractAdded')) {
-          const addedSections = processor.addedFeatures
-          if (addedSections.length > 0) {
-            console.log('Extracting added features...')
-            addedSections.forEach((section) => {
-              processedContent += `## ${section.title}\n\n${section.body}\n\n`
-            })
-          }
-        }
-
-        console.log('Processed content:', processedContent)
-        res.status(200).json({ content: processedContent })
-        return
+      const processedContent = this.processSelectedMethods(processorInstance, selectedMethods)
+      if (!processedContent) {
+        throw new HttpError(`No content extracted for methods: ${selectedMethods.join(', ')}`, 400)
       }
 
-      // Handle unsupported file path with a 404 error.
-      console.log('File not found, throwing 404 error...')
-      next(new HttpError('File not found', 404))
+      console.log('Processed content:', processedContent)
+      res.status(200).json({ content: processedContent })
     } catch (error) {
       console.error('Error caught in controller:', error)
-      next(error)
+      next(error instanceof HttpError ? error : new HttpError('Internal server error', 500))
     }
+  }
+
+  // Parses methods query parameter into an array of method names.
+  private parseMethods(methods: string | string[] | undefined): string[] {
+    if (!methods) return []
+    if (typeof methods === 'string') {
+      return methods.split(',').map((method) => method.trim())
+    }
+    return methods.flatMap((method) => method.split(',').map((m) => m.trim()))
+  }
+
+  // Determines the appropriate processor based on the file path.
+  private getProcessorInstance(filepath: string, document: string): RepoReadmeProcessor | ChangelogProcessor | null {
+    const isReadme = filepath.toLowerCase() === 'readme.md'
+    if (isReadme) {
+      return new RepoReadmeProcessor(document, false)
+    } else if (filepath.toLowerCase() === 'changelog.md') {
+      return new ChangelogProcessor(document, false)
+    }
+    return null
+  }
+
+  // Processes content using the selected methods and returns concatenated output.
+  private processSelectedMethods(
+    processor: RepoReadmeProcessor | ChangelogProcessor,
+    selectedMethods: string[]
+  ): string {
+    const methodMap = this.getMethodMap(processor)
+    let content = ''
+
+    selectedMethods.forEach((method) => {
+      const sections = methodMap[method]
+      if (sections && sections.length > 0) {
+        console.log(`Extracting ${method}...`)
+        sections.forEach((section) => {
+          content += `## ${section.title}\n\n${section.body}\n\n`
+        })
+      } else {
+        console.log(`Method ${method} not supported for this processor.`)
+      }
+    })
+
+    return content
+  }
+
+  // Maps method names to section extraction methods on the processors.
+  private getMethodMap(processor: RepoReadmeProcessor | ChangelogProcessor): Record<string, { title: string; body: string }[]> {
+    if (processor instanceof RepoReadmeProcessor) {
+      return {
+        extractInstallation: processor.installationInstructions,
+        extractUsage: processor.usageExamples,
+        extractApi: processor.api,
+        extractDpendencies: processor.dependencies,
+        extractLicenseInfo: processor.licenseInfo
+      }
+    } else if (processor instanceof ChangelogProcessor) {
+      return {
+        extractUnreleased: processor.unreleasedChanges,
+        extractAdded: processor.addedFeatures,
+        extractChangedFeature: processor.changedFeatures
+      }
+    }
+    return {}
   }
 }
 
