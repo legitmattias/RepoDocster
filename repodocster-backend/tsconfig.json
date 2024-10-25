@@ -1,24 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES6",                // Compiles to ES6
-    "lib": ["es2019", "dom"],
-    "module": "esnext",             // Use ESNext modules (import/export syntax)
-    "moduleResolution": "node",     // Resolve modules as Node.js does
-    "strict": true,                 // Enable strict type checking
-    "esModuleInterop": true,        // Allows interoperability between CommonJS and ES Modules
-    "skipLibCheck": true,           // Skips checking of declaration files (.d.ts)
-    "forceConsistentCasingInFileNames": true, // Ensures consistent casing in filenames
-    "outDir": "./dist",             // Output directory for compiled files
-    "declaration": true,             // Generate declaration files for TypeScript
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "target": "ES2020",                     // Updated target to ES2020 for broader support
+    "lib": ["es2020", "dom"],               // Libraries for ES2020 and DOM types
+    "module": "commonjs",                   // CommonJS is often preferred for Node.js environments
+    "moduleResolution": "node",             // Node.js style module resolution
+    "strict": true,                         // Enable strict type checking
+    "esModuleInterop": true,                // Enable interop between CommonJS and ES modules
+    "skipLibCheck": true,                   // Skip type checks on declaration files for faster builds
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+    "outDir": "./dist",                     // Output directory for compiled files
+    "declaration": true,                    // Generate declaration files
+    "typeRoots": ["./node_modules/@types", "./src/types"], // Include custom types folder
+    "resolveJsonModule": true,              // Allows importing JSON modules
+    "isolatedModules": true                 // Ensures each file is treated as a separate module
   },
   "include": [
-    "src/**/*.ts",                  // Include all TypeScript files in the src folder
-    "tests/**/*.ts",                // Include all TypeScript test files
-    "./src/types/express.d.ts"      // Custom TypeScript types
+    "src/**/*.ts",                          // Include all TypeScript files in the src folder
+    "tests/**/*.ts",                        // Include test files
+    "./src/types/**/*.d.ts"                 // Custom type definitions
   ],
   "exclude": [
-    "node_modules",                 // Exclude node_modules from compilation
-    "dist"                          // Exclude the dist folder (compiled output)
+    "node_modules",                         // Exclude node_modules
+    "dist"                                  // Exclude dist directory from compilation
   ]
 }
