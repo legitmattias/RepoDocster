@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2020",                     // Updated target to ES2020 for broader support
+    "target": "ESNext",
     "lib": ["es2020", "dom"],               // Libraries for ES2020 and DOM types
-    "module": "commonjs",                   // CommonJS is often preferred for Node.js environments
+    "module": "ES6",                        // CommonJS is often preferred for Node.js environments
     "moduleResolution": "node",             // Node.js style module resolution
     "strict": true,                         // Enable strict type checking
     "esModuleInterop": true,                // Enable interop between CommonJS and ES modules
