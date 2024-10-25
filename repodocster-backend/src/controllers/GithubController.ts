@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-import BackendConfig from '../config/BackendConfig'
-import { fetchGithubDocument } from '../services/githubService'
-import { RepoReadmeProcessor, ChangelogProcessor }from '@kikinit/mddoc-toolkit'
-import HttpError from '../utils/HttpError'
+import BackendConfig from '../config/BackendConfig.js'
+import { fetchGithubDocument } from '../services/githubService.js'
+import { RepoReadmeProcessor, ChangelogProcessor } from '@kikinit/mddoc-toolkit'
+import HttpError from '../utils/HttpError.js'
 
 class GithubController {
   private config: BackendConfig
@@ -17,8 +17,11 @@ class GithubController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    console.log('getGithubDocument invoked!')
+
     const { owner, repo, filepath } = req.params
     const { bypassProcessor, methods } = req.query
+    console.log('Received params:', owner, repo, filepath)
 
     try {
       // Fetch the document from GitHub.
@@ -29,50 +32,85 @@ class GithubController {
         filepath
       )
 
-      // Check if user wants to bypass the processor.
+      // Return raw document if bypassProcessor is true.
       if (bypassProcessor === 'true') {
+        console.log('Bypassing processor, returning raw document')
         res.status(200).json({ content: document })
+        return
       }
 
       const selectedMethods = Array.isArray(methods) ? methods : [methods]
+      console.log('Selected methods:', selectedMethods)
 
-      // Process README.md using RepoReadmeProcessor.
+      let processedContent = ''
+
+      // Handle README.md processing.
       if (filepath.toLowerCase() === 'readme.md') {
-        const processor = new RepoReadmeProcessor(document)
-        let processedContent = ''
+        console.log('Processing README.md...')
+        const processor = new RepoReadmeProcessor(document, false)
 
-        // Check and apply selected methods.
         if (selectedMethods.includes('extractInstallation')) {
-          processedContent += processor.installationInstructions
+          const installationSections = processor.installationInstructions
+          if (installationSections.length > 0) {
+            console.log('Extracting installation instructions...')
+            installationSections.forEach((section) => {
+              // Combine title and body for proper markdown structure.
+              processedContent += `## ${section.title}\n\n${section.body}\n\n`
+            })
+          }
         }
+
         if (selectedMethods.includes('extractUsage')) {
-          processedContent += processor.usageExamples
+          const usageSections = processor.usageExamples
+          if (usageSections.length > 0) {
+            console.log('Extracting usage examples...')
+            usageSections.forEach((section) => {
+              // Combine title and body for proper markdown structure.
+              processedContent += `## ${section.title}\n\n${section.body}\n\n`
+            })
+          }
         }
 
+        console.log('Processed content:', processedContent)
         res.status(200).json({ content: processedContent })
         return
       }
 
-      // Process CHANGELOG.md using ChangelogProcessor.
+      // Handle CHANGELOG.md processing.
       if (filepath.toLowerCase() === 'changelog.md') {
-        const processor = new ChangelogProcessor(document)
-        let processedContent = ''
+        console.log('Processing CHANGELOG.md...')
+        const processor = new ChangelogProcessor(document, false)
 
-        // Check and apply selected methods.
         if (selectedMethods.includes('extractUnreleased')) {
-          processedContent += processor.unreleasedChanges
-        }
-        if (selectedMethods.includes('extractAdded')) {
-          processedContent += processor.addedFeatures
+          const unreleasedSections = processor.unreleasedChanges
+          if (unreleasedSections.length > 0) {
+            console.log('Extracting unreleased changes...')
+            unreleasedSections.forEach((section) => {
+              processedContent += `## ${section.title}\n\n${section.body}\n\n`
+            })
+          }
         }
 
+        if (selectedMethods.includes('extractAdded')) {
+          const addedSections = processor.addedFeatures
+          if (addedSections.length > 0) {
+            console.log('Extracting added features...')
+            addedSections.forEach((section) => {
+              processedContent += `## ${section.title}\n\n${section.body}\n\n`
+            })
+          }
+        }
+
+        console.log('Processed content:', processedContent)
         res.status(200).json({ content: processedContent })
         return
       }
 
-      // If no valid filepath, throw a 404 error.
-      throw new HttpError('File not found', 404)
+      // If no valid filepath match, throw 404.
+      console.log('File not found, throwing 404 error...')
+      next(new HttpError('File not found', 404))
     } catch (error) {
+      console.error('Error caught in controller:', error)
       next(error)
     }
   }
