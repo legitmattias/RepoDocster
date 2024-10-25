@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES6",                // Compiles to ES6
+    "lib": ["es2019", "dom"],
     "module": "esnext",             // Use ESNext modules (import/export syntax)
     "moduleResolution": "node",     // Resolve modules as Node.js does
     "strict": true,                 // Enable strict type checking

@@ -21,20 +21,22 @@ export const fetchGithubDocument = async (
     const url = config.getGithubRoute(owner, repo, filepath)
     console.log('Fetching from GitHub API:', url)
 
-    const response = await axios.get(url, {
+    const response = await axios.get<string>(url, {
       headers: {
         Accept: config.getGithubApiAcceptHeader(),
         Authorization: `Bearer ${config.getGithubToken()}`,
       },
     })
+
     return response.data
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status) {
-      throw new HttpError(
-        `Failed to fetch document: ${error.response.data.message || 'Error'}`,
-        error.response.status
-      )
-    }
-    throw new HttpError('An unexpected error occurred', 500)
+    console.error(
+      'An error occurred while fetching data:',
+      error instanceof Error ? error.message : error
+    )
+    throw new HttpError(
+      'An unexpected error occurred while fetching the document',
+      500
+    )
   }
 }
