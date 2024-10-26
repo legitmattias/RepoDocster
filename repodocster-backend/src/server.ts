@@ -18,10 +18,16 @@ try {
   // Enable CORS.
   app.use(
     cors({
-      origin: ['http://localhost:3000', 'https://repodocster-frontend.onrender.com/'],
+      origin: ['http://localhost:3000', 'https://repodocster-frontend.onrender.com'],
       credentials: true,
+      methods: ['GET'],
+      allowedHeaders: ['Content-Type', 'Authorization']
     })
   )
+  
+  // Handle preflight requests for all routes
+  app.options('*', cors())
+  
 
   // Set HTTP headers for security.
   app.use(helmet())
