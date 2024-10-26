@@ -18,7 +18,7 @@ try {
   // Enable CORS.
   app.use(
     cors({
-      origin: ['http://localhost:3000'], // The React frontend.
+      origin: ['http://localhost:3000', 'https://repodocster-frontend.onrender.com/'],
       credentials: true,
     })
   )
