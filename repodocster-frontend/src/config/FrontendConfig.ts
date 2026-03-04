@@ -1,9 +1,5 @@
 class FrontendConfig {
-  private backendApiUrl: string
-
-  constructor() {
-    this.backendApiUrl = process.env.REACT_APP_BACKEND_API_URL || ''
-  }
+  private backendApiUrl: string = 'https://repodocster-backendfork.onrender.com'
 
   // Return the backend API URL.
   getBackendApiUrl(): string {
